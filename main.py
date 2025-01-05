@@ -108,7 +108,8 @@ async def chat(request: ChatRequest):
 # Start Uvicorn server if run directly
 if __name__ == "__main__":
     ENV = os.getenv("ENV", "prod")
-    PORT = os.getenv("PORT", 8000)
+    PORT = int(os.environ.get("PORT", 8000))
+
 
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=int(PORT), reload=(ENV == "dev"))
