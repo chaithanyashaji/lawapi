@@ -13,6 +13,7 @@ from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
 import warnings
+import uvicorn
 
 # Logging configuration
 logging.basicConfig(level=logging.DEBUG)
@@ -89,21 +90,17 @@ qa = ConversationalRetrievalChain.from_llm(
 # Initialize FastAPI app
 app = FastAPI()
 
-
 # Define request and response models
 class ChatRequest(BaseModel):
     question: str
 
-
 class ChatResponse(BaseModel):
     answer: str
-
 
 # Health check endpoint
 @app.get("/")
 async def root():
     return {"message": "Hello, World!"}
-
 
 # Chat endpoint
 @app.post("/chat", response_model=ChatResponse)
@@ -117,13 +114,8 @@ async def chat(request: ChatRequest):
         logger.error(f"Error during chat invocation: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-
 # Start Uvicorn server if run directly
 if __name__ == "__main__":
     ENV = os.getenv("ENV", "prod")
-    PORT = int(os.environ.get("PORT", 8000))
-
-    import uvicorn
-
+    PORT = int(os.environ.get("PORT", 10000))  # Use the default port 10000 or the environment port
     uvicorn.run("main:app", host="0.0.0.0", port=PORT, reload=(ENV == "dev"))
-
