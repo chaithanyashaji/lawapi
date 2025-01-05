@@ -28,7 +28,7 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 # Load environment variables
 load_dotenv()
 TOGETHER_AI_API = os.getenv("TOGETHER_AI")
-os.environ["TRANSFORMERS_CACHE"] = os.getenv("TRANSFORMERS_CACHE", "./cache")
+
 
 if not TOGETHER_AI_API:
     raise ValueError("Environment variable TOGETHER_AI_API is missing. Please set it in your .env file.")
