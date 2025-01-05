@@ -104,3 +104,11 @@ async def chat(request: ChatRequest):
     except Exception as e:
         logger.error(f"Error during chat invocation: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
+# Start Uvicorn server if run directly
+if __name__ == "__main__":
+    ENV = os.getenv("ENV", "prod")
+    PORT = os.getenv("PORT", 8000)
+
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=int(PORT), reload=(ENV == "dev"))
