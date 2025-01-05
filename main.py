@@ -28,10 +28,18 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 # Load environment variables
 load_dotenv()
 TOGETHER_AI_API = os.getenv("TOGETHER_AI")
+TRANSFORMERS_CACHE = os.getenv("TRANSFORMERS_CACHE", "./cache")
 
+# Set cache directory for transformers
+os.environ["TRANSFORMERS_CACHE"] = TRANSFORMERS_CACHE
 
+# Validate environment variables
 if not TOGETHER_AI_API:
     raise ValueError("Environment variable TOGETHER_AI_API is missing. Please set it in your .env file.")
+
+# Ensure cache directory exists
+if not os.path.exists(TRANSFORMERS_CACHE):
+    os.makedirs(TRANSFORMERS_CACHE)
 
 # Initialize embeddings and vectorstore
 embeddings = HuggingFaceEmbeddings(
@@ -49,12 +57,12 @@ except Exception as e:
 
 # Define the prompt template
 prompt_template = """<s>[INST]As a legal chatbot specializing in the Indian Penal Code, provide a concise and accurate answer based on the given context. Avoid unnecessary details or unrelated content. Only respond if the answer can be derived from the provided context; otherwise, say "The information is not available in the provided context." 
-CONTEXT: {context}
-CHAT HISTORY: {chat_history}
-QUESTION: {question}
-ANSWER:
-</s>[INST]
-"""
+    CONTEXT: {context}
+    CHAT HISTORY: {chat_history}
+    QUESTION: {question}
+    ANSWER:
+    </s>[INST]
+    """
 prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question", "chat_history"])
 
 # Initialize the Together API
@@ -81,17 +89,21 @@ qa = ConversationalRetrievalChain.from_llm(
 # Initialize FastAPI app
 app = FastAPI()
 
+
 # Define request and response models
 class ChatRequest(BaseModel):
     question: str
 
+
 class ChatResponse(BaseModel):
     answer: str
+
 
 # Health check endpoint
 @app.get("/")
 async def root():
     return {"message": "Hello, World!"}
+
 
 # Chat endpoint
 @app.post("/chat", response_model=ChatResponse)
@@ -105,11 +117,13 @@ async def chat(request: ChatRequest):
         logger.error(f"Error during chat invocation: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+
 # Start Uvicorn server if run directly
 if __name__ == "__main__":
     ENV = os.getenv("ENV", "prod")
     PORT = int(os.environ.get("PORT", 8000))
 
-
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=int(PORT), reload=(ENV == "dev"))
+
+    uvicorn.run("main:app", host="0.0.0.0", port=PORT, reload=(ENV == "dev"))
+
